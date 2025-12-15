@@ -52,7 +52,7 @@ class ShapeCNN(nn.Module):
     def __init__(self):
         super().__init__()
         self.conv1 = nn.Conv2d(
-            in_channels=3, out_channels=16, kernel_size=3, stride=1, padding=1
+            in_channels=1, out_channels=16, kernel_size=3, stride=1, padding=1
         )
 
         self.conv2 = nn.Conv2d(
@@ -155,8 +155,18 @@ if __name__ == "__main__":
         create_triangle(TypeOfData.TEST, 1000)
 
     # Convert into Pytorch data objects
-    train_dataset = datasets.ImageFolder("data/train", transform=transforms.ToTensor())
-    test_dataset = datasets.ImageFolder("data/test", transform=transforms.ToTensor())
+    transform = transforms.Compose(
+        [
+            # Currently this mode does not care about color - We are gonna keep generating rgb because who knows
+            transforms.Grayscale(),
+            # Convert [0,255] to [0,1]
+            transforms.ToTensor(),
+            # Convert to [-1,1] which in turn makes shape detection stronger. Mote - In thesis I should calculate this before hand but I mean batch norm should apply after a while
+            transforms.Normalize(mean=0.5, std=0.5),
+        ]
+    )
+    train_dataset = datasets.ImageFolder("data/train", transform=transform)
+    test_dataset = datasets.ImageFolder("data/test", transform=transform)
     train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
     test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
 
@@ -165,7 +175,6 @@ if __name__ == "__main__":
     # Create it is loss function and define it is optimizer
     loss_fn = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-
     # Train and validate
     epochs = 5
     for t in range(epochs):
@@ -174,3 +183,4 @@ if __name__ == "__main__":
             loader=train_loader, model=model, loss_fn=loss_fn, optimizer=optimizer
         )
         eval_loop(loader=test_loader, model=model, loss_fn=loss_fn)
+    # TODO - Add ignite to make this 100%
