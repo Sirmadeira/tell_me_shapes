@@ -13,6 +13,12 @@ class TypeOfData(Enum):
     VAL = "val"
 
 
+def create_data_dirs():
+    for split in ["train", "test"]:
+        for cls in ["circles", "triangles"]:
+            os.makedirs(f"data/{split}/{cls}", exist_ok=True)
+
+
 def create_circle(type_of_data: TypeOfData, amount: int):
     for i in range(amount):
         img = Image.new("RGB", (128, 128), "white")
@@ -59,6 +65,7 @@ class ShapeCNN(nn.Module):
 
         # Diminish our image size by 2, note that does make it so it need to be divisible by 2 our input
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.flatten = nn.Flatten()
 
         #  Convert our bias and weight that we got from the neurons into a 256 a number utilized mostly due to convenicnce
         # So we dont have overfitting, this applies an afiine linear transformation which is in summary
@@ -78,7 +85,7 @@ class ShapeCNN(nn.Module):
         x = self.pool(x)
 
         # This immediately creates the layer and inputs the x given by our neurons layers
-        x = nn.Flatten()(x)
+        x = self.flatten(x)
 
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
@@ -140,7 +147,8 @@ if __name__ == "__main__":
     )
     print(f"Using {device} device")
     # Create test and train data
-    if len(os.listdir("data")) == 0:
+    if not os.path.isdir("data") or not os.listdir("data"):
+        create_data_dirs()
         create_circle(TypeOfData.TRAIN, 5000)
         create_triangle(TypeOfData.TRAIN, 5000)
         create_circle(TypeOfData.TEST, 1000)
@@ -150,7 +158,7 @@ if __name__ == "__main__":
     train_dataset = datasets.ImageFolder("data/train", transform=transforms.ToTensor())
     test_dataset = datasets.ImageFolder("data/test", transform=transforms.ToTensor())
     train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=64, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
 
     # Create the model and move it to the gpu
     model = ShapeCNN().to(device)
