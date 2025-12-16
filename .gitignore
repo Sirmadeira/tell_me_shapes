@@ -1,4 +1,8 @@
 .venv/*
-/data/*
+data/*
+notebooks/data/*
+notebooks/tb-logger/*
 !/data/.gitkeep
+__pycache__/
+*.py[cod]
 
