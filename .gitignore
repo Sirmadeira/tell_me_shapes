@@ -2,6 +2,7 @@
 data/*
 notebooks/data/*
 notebooks/tb-logger/*
+notebooks/checkpoint/*
 !/data/.gitkeep
 __pycache__/
 *.py[cod]
