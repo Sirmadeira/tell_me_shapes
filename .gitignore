@@ -3,7 +3,8 @@ data/*
 notebooks/data/*
 notebooks/tb-logger/*
 notebooks/checkpoint/*
-!/data/.gitkeep
+!/notebooks/checkpoint/.gitkeep
+!notebooks/data/.gitkeep
 __pycache__/
 *.py[cod]
 
